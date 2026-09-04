@@ -1,0 +1,27 @@
+# .cursorrules — ULTRON Development Directives
+
+You are assisting with the ULTRON AI Desktop Assistant codebase.
+Adhere strictly to the following architectural invariants and conventions:
+
+1. ARCHITECTURE & THREADING:
+   - PyQt6 runs on the Main Thread. The asyncio event loop runs in a background daemon thread.
+   - NEVER call Qt GUI methods directly from background threads or coroutines; use pyqtSignal or thread-safe methods.
+   - Always run blocking operations (Playwright, PyAutoGUI, file I/O, subprocesses) in `await loop.run_in_executor(None, ...)`.
+
+2. WINDOWS PROCESS SAFETY:
+   - Preserve the `_subprocess.Popen` monkey-patch in `main.py` (forces CREATE_NO_WINDOW).
+   - Ensure all `subprocess.run` calls specify explicit timeouts.
+
+3. GEMINI LIVE & TOOL CALLING:
+   - Primary model: `models/gemini-2.5-flash-native-audio-preview-12-2025`.
+   - Inbound mic audio: 16kHz Mono PCM. Outbound speaker audio: 24kHz Mono PCM.
+   - When adding tools:
+     a) Implement logic in `actions/<name>.py`
+     b) Declare function schema in `core/tool_declarations.py`
+     c) Bind async handler in `main.py` -> `TOOL_REGISTRY`
+
+4. CODE QUALITY & DOCUMENTATION:
+   - Python 3.10+ type hints (`X | None`, `list[T]`).
+   - Catch exceptions gracefully in tools and return descriptive error strings.
+   - Update `CHANGELOG.md` under `[Unreleased]` for any non-trivial changes.
+   - Consult `AGENTS.md` and `ARCHITECTURE.md` before making architectural refactors.
