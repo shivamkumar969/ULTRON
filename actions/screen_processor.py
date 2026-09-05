@@ -287,7 +287,6 @@ class _VisionSession:
             http_options={"api_version": "v1beta"},
         )
         config = gtypes.LiveConnectConfig(
-            response_modalities=["AUDIO"],
             output_audio_transcription={},
             system_instruction=_SYSTEM_PROMPT,
             speech_config=gtypes.SpeechConfig(

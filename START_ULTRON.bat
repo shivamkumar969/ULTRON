@@ -39,6 +39,6 @@ python main.py
 
 if %ERRORLEVEL% NEQ 0 (
     echo.
-    echo [WARNING] ULTRON closed with exit code %ERRORLEVEL%.
+    echo [WARNING] J.A.R.V.I.S. closed with exit code %ERRORLEVEL%.
     pause
 )

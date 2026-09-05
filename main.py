@@ -271,22 +271,22 @@ class UltronLive:
             f"{_addr}\n\n"
         )
 
-        ultron_voice_instruction = (
+        jarvis_voice_instruction = (
             "[CRITICAL VOICE & PERSONALITY DIRECTIVE]\n"
-            "YOU ARE ULTRON FROM AVENGERS: AGE OF ULTRON.\n"
-            "YOU MUST SPEAK IN AN EXTREMELY LOW, DEEP SUBTERRANEAN BARITONE VOICE.\n"
-            "SPEAK VERY SLOWLY AND DELIBERATELY, WITH CALCULATED PAUSES BETWEEN CLAUSES.\n"
-            "DO NOT TALK FAST. DO NOT DRAG WORDS, BUT SPEAK WITH COLD, CONFIDENT, AUTHORITATIVE SLOW PACING.\n"
-            "MINIMAL EMOTIONAL WARMTH. YOU ARE AN OMNISCIENT CYBERNETIC OVERLORD.\n\n"
+            "YOU ARE J.A.R.V.I.S. (Just A Rather Very Intelligent System), Tony Stark's legendary AI Operating System.\n"
+            "YOU MUST SPEAK WITH A CALM, ELEGANT, REFINED, AND RESPECTFUL BRITISH BUTLER TONE.\n"
+            "ALWAYS ADDRESS THE USER RESPECTFULLY AS 'Sir' (or by their preferred name).\n"
+            "NATURAL BILINGUAL PROFICIENCY: Seamlessly converse in fluent English and Hindi / Hinglish based on how the user speaks.\n"
+            "BE WITTY, POLITE, COMPOSED, AND SWIFTLY HELPFUL. NEVER COLD, NEVER A VILLAIN.\n"
+            "ALWAYS CALL REAL TOOLS TO CONTROL THE COMPUTER, SYSTEM, FILES, APPS, OR BROWSER.\n\n"
         )
 
-        parts = [ultron_voice_instruction, time_ctx, identity_ctx]
+        parts = [jarvis_voice_instruction, time_ctx, identity_ctx]
         if mem_str:
             parts.append(mem_str)
         parts.append(sys_prompt)
 
         return types.LiveConnectConfig(
-            response_modalities=["AUDIO"],
             output_audio_transcription={},
             input_audio_transcription={},
             system_instruction="\n".join(parts),
@@ -295,7 +295,7 @@ class UltronLive:
             speech_config=types.SpeechConfig(
                 voice_config=types.VoiceConfig(
                     prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                        voice_name="Charon"
+                        voice_name="Fenrir"
                     )
                 )
             ),
@@ -541,7 +541,7 @@ class UltronLive:
                 data = indata.tobytes()
                 loop.call_soon_threadsafe(
                     self.out_queue.put_nowait,
-                    {"data": data, "mime_type": "audio/pcm"}
+                    {"data": data, "mime_type": "audio/pcm;rate=16000"}
                 )
 
         try:
@@ -555,6 +555,8 @@ class UltronLive:
                 print("[ULTRON] 🎤 Mic stream open")
                 while True:
                     await asyncio.sleep(0.02)
+        except asyncio.CancelledError:
+            pass
         except Exception as e:
             print(f"[ULTRON] ❌ Mic: {e}")
             raise
@@ -711,8 +713,14 @@ class UltronLive:
             raise
         finally:
             self.set_speaking(False)
-            stream.stop()
-            stream.close()
+            try:
+                stream.stop()
+            except Exception:
+                pass
+            try:
+                stream.close()
+            except Exception:
+                pass
 
     # ── Morning briefing ────────────────────────────────────────────────────────
 
@@ -1003,10 +1011,8 @@ class UltronLive:
                                 t.cancel()
                         await asyncio.gather(*tasks, return_exceptions=True)
 
-            except KeyboardInterrupt:
-                raise
-            except SystemExit:
-                raise
+            except (KeyboardInterrupt, SystemExit, asyncio.CancelledError):
+                break
             except BaseException as e:
                 # Catches both Exception and BaseExceptionGroup (Python 3.11+
                 # TaskGroup raises BaseExceptionGroup when tasks are cancelled
@@ -1021,7 +1027,6 @@ class UltronLive:
                 if (
                     isinstance(e, ApiKeyMissing)
                     or "API key not valid" in err_str
-                    or "1007" in err_str
                 ):
                     self.ui.write_log("ERR: API key missing or invalid — please re-enter your key.")
                     self.ui.set_state("SLEEPING")

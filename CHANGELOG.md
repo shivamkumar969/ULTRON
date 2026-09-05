@@ -44,6 +44,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Gemini Model Upgrade**: Upgraded all action engines from deprecated `gemini-2.5-flash` / `gemini-2.5-flash-lite` to Google's official `gemini-3.6-flash` (`web_search.py`, `code_helper.py`, `dev_agent.py`, `desktop.py`, `file_processor.py`, `flight_finder.py`, `youtube_video.py`, `computer_settings.py`, `computer_control.py`), and updated live audio streaming model to `models/gemini-2.5-flash-native-audio-latest`.
 
 ### Fixed
+- Fixed Gemini Live WebSocket 1007 error (`CONTENT_TYPE_AUDIO is not supported for this model configuration`) by removing redundant `response_modalities=["AUDIO"]` from `LiveConnectConfig` in `main.py` and `actions/screen_processor.py`.
+- Fixed audio stream input format in `main.py` and `dashboard/server.py` to specify 16,000Hz PCM rate (`audio/pcm;rate=16000`).
+- Fixed `OSError: [WinError 6] The handle is invalid` during audio playback stream termination by wrapping `stream.stop()` and `stream.close()` safely in `main.py`.
+- Fixed false API key prompt on 1007 payload errors in `main.py`.
+- Fixed dashboard `uvicorn` `SystemExit` termination when port 8000 is occupied, and added `from __future__ import annotations` for Python 3.9 compatibility.
 - Fixed missing `_capture_screen` import in `main.py` which would have caused a runtime `NameError` during screen vision capture.
 - Fixed Python 3.10 incompatibility in `actions/screen_processor.py` by replacing `asyncio.TaskGroup` and `except*` syntax with `asyncio.gather` and standard exception handling.
 - Added `from __future__ import annotations` to 14 files ensuring complete PEP 604 type annotation backward compatibility for Python 3.9 environments.

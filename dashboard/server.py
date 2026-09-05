@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 dashboard/server.py — ULTRON Local HTTP Dashboard
 
@@ -635,7 +636,7 @@ class DashboardServer:
                     data = await websocket.receive_bytes()
                     try:
                         self._phone_audio_queue.put_nowait(
-                            {"data": data, "mime_type": "audio/pcm"}
+                            {"data": data, "mime_type": "audio/pcm;rate=16000"}
                         )
                     except asyncio.QueueFull:
                         pass  # drop frame rather than block
@@ -821,4 +822,9 @@ class DashboardServer:
         proto = "https" if use_ssl else "http"
         print(f"[Dashboard] {proto}://{self._ip}:{PORT}")
         print("[Dashboard] Press 'Remote Control' in ULTRON UI to get the QR code.")
-        await uvicorn.Server(cfg).serve()
+        try:
+            await uvicorn.Server(cfg).serve()
+        except SystemExit:
+            print(f"[Dashboard] Port {PORT} is busy or unavailable. Dashboard disabled.")
+        except Exception as e:
+            print(f"[Dashboard] Server error: {e}")
