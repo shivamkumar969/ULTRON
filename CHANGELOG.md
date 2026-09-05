@@ -34,9 +34,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Active Perception Copilot Mode**: Created `actions/copilot_watcher.py` to passively monitor screens in the background and proactively offer guidance when terminal errors or code tracebacks are detected.
 - **Tool Registry Integration**: Registered all 4 new tools in `main.py`'s `TOOL_REGISTRY` and declared schemas in `core/tool_declarations.py`.
 
+### Changed
+- **Gemini Model Upgrade**: Upgraded all action engines from deprecated `gemini-2.5-flash` / `gemini-2.5-flash-lite` to Google's official `gemini-3.6-flash` (`web_search.py`, `code_helper.py`, `dev_agent.py`, `desktop.py`, `file_processor.py`, `flight_finder.py`, `youtube_video.py`, `computer_settings.py`, `computer_control.py`), and updated live audio streaming model to `models/gemini-2.5-flash-native-audio-latest`.
+
 ### Fixed
 - Fixed missing `_capture_screen` import in `main.py` which would have caused a runtime `NameError` during screen vision capture.
 - Fixed Python 3.10 incompatibility in `actions/screen_processor.py` by replacing `asyncio.TaskGroup` and `except*` syntax with `asyncio.gather` and standard exception handling.
+- Added `from __future__ import annotations` to 14 files ensuring complete PEP 604 type annotation backward compatibility for Python 3.9 environments.
+- Added safe fallback imports for `playwright` in `actions/browser_control.py` to prevent missing C++ compiler build crashes.
+- Added dynamic OneDrive Desktop path resolution in `actions/goal_agent.py`.
 - Added safe fallback imports for `sounddevice` and `google.genai` across action modules.
 
 ---

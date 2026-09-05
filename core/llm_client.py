@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Local LLM client for HUNNY (ULTRON AI Engine).
 

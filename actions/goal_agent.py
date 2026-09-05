@@ -97,7 +97,7 @@ Respond ONLY with a valid JSON array of step objects:
 """
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3.6-flash",
             contents=prompt
         )
         cleaned = _clean_json(response.text or "")
@@ -128,6 +128,19 @@ def _execute_subtask(action_name: str, params: dict, player=None) -> str:
             return f"Action {action_name} executed with params {params}."
     except Exception as e:
         return f"ERROR: {e}"
+
+
+def _get_desktop_dir() -> Path:
+    candidates = [
+        Path.home() / "OneDrive" / "Desktop",
+        Path.home() / "Desktop",
+    ]
+    for c in candidates:
+        if c.exists() and c.is_dir():
+            return c
+    p = Path.home() / "Desktop"
+    p.mkdir(parents=True, exist_ok=True)
+    return p
 
 
 def execute_autonomous_goal(parameters: dict, player=None, speak: Callable[[str], None] | None = None) -> str:
@@ -188,7 +201,8 @@ def execute_autonomous_goal(parameters: dict, player=None, speak: Callable[[str]
 
     # 3. Create Desktop Summary Report
     try:
-        report_path = Path.home() / "Desktop" / "Ultron_Autonomous_Report.md"
+        report_dir = _get_desktop_dir()
+        report_path = report_dir / "Ultron_Autonomous_Report.md"
         report_lines = [
             f"# ULTRON Autonomous Execution Report",
             f"**Goal**: {goal}",

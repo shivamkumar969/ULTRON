@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Speech-to-Text engines for HUNNY.
 

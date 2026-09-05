@@ -1,3 +1,4 @@
+from __future__ import annotations
 #flight_finder.py
 from utils.env import get_api_key, get_base_dir, is_mac, is_windows
 import json
@@ -55,7 +56,7 @@ def _parse_date(raw: str) -> str:
         from google import genai as _genai
         _client  = _genai.Client(api_key=get_api_key('gemini_api_key'))
         response = _client.models.generate_content(
-            model="gemini-2.5-flash-lite",
+            model="gemini-3.6-flash",
             contents=(
                 f"Today is {today.strftime('%Y-%m-%d')}. "
                 f"Convert this date expression to YYYY-MM-DD: '{raw}'. "
@@ -159,7 +160,7 @@ def _parse_flights_with_gemini(
 
     try:
         response = _client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3.6-flash",
             contents=prompt,
             config=types.GenerateContentConfig(
                 system_instruction=(

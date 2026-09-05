@@ -12,13 +12,18 @@ import webbrowser
 from pathlib import Path
 from typing import Optional
 
-from playwright.async_api import (
-    async_playwright,
-    BrowserContext,
-    Page,
-    Playwright,
-    TimeoutError as PlaywrightTimeout,
-)
+_PLAYWRIGHT_OK = False
+try:
+    from playwright.async_api import (
+        async_playwright,
+        BrowserContext,
+        Page,
+        Playwright,
+        TimeoutError as PlaywrightTimeout,
+    )
+    _PLAYWRIGHT_OK = True
+except ImportError:
+    pass
 from utils.env import get_os
 _OS = get_os()   # "Windows" | "Darwin" | "Linux"
 

@@ -49,7 +49,7 @@ _BASE        = get_base_dir()
 _CONFIG_PATH = _BASE / "config" / "api_keys.json"
 
 
-_LIVE_MODEL         = "models/gemini-2.5-flash-native-audio-preview-12-2025"
+_LIVE_MODEL         = "models/gemini-2.5-flash-native-audio-latest"
 _CHANNELS           = 1
 _RECEIVE_SAMPLE_RATE = 24_000
 _CHUNK_SIZE         = 1_024

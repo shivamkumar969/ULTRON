@@ -1,3 +1,4 @@
+from __future__ import annotations
 from utils.env import get_os, is_linux, is_mac, is_windows
 import os
 import platform

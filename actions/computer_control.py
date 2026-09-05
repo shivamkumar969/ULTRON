@@ -1,3 +1,4 @@
+from __future__ import annotations
 #computer_control.py
 from utils.env import get_api_key, get_os, load_config, get_base_dir
 import io
@@ -318,7 +319,7 @@ def _screen_find(description: str) -> tuple[int, int] | None:
         )
 
         response = client.models.generate_content(
-            model="gemini-2.5-flash-lite",
+            model="gemini-3.6-flash",
             contents=[
                 gtypes.Part.from_bytes(data=image_bytes, mime_type="image/png"),
                 prompt,
