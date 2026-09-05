@@ -190,7 +190,8 @@ class SystemMonitor:
 
     def check_emergency(self) -> dict:
         """
-        Evaluates CPU and RAM metrics for Emergency Siren (>=90%) and Auto-Close (>=95%).
+        Evaluates CPU and RAM metrics for Emergency Alert (sustained CPU >=95% or RAM >=98%).
+        Includes cooldown and streak protection so normal memory cache never triggers false alerts.
         """
         try:
             cpu = psutil.cpu_percent(interval=None)
@@ -198,20 +199,20 @@ class SystemMonitor:
         except Exception:
             return {"is_emergency_90": False, "is_overload_95": False, "closed": [], "cpu": 0, "ram": 0}
 
-        max_usage = max(cpu, ram)
-        is_emergency_90 = max_usage >= 90.0
-        is_overload_95 = max_usage >= 95.0
-        closed_apps: list[str] = []
+        # Sustained threshold: only trigger if CPU >= 95% for 3+ cycles OR RAM >= 98%
+        if cpu >= 95.0 or ram >= 98.0:
+            self._emergency_streak = getattr(self, "_emergency_streak", 0) + 1
+        else:
+            self._emergency_streak = 0
 
-        now = time.monotonic()
-        if is_overload_95 and (now - self._last_auto_close_time > 15.0):
-            self._last_auto_close_time = now
-            closed_apps = auto_close_heavy_background_apps()
+        is_emergency = (self._emergency_streak >= 3) and self._can_alert("emergency")
+        if is_emergency:
+            self._record("emergency")
 
         return {
-            "is_emergency_90": is_emergency_90,
-            "is_overload_95": is_overload_95,
-            "closed": closed_apps,
+            "is_emergency_90": is_emergency,
+            "is_overload_95": False,
+            "closed": [],
             "cpu": round(cpu, 1),
             "ram": round(ram, 1),
         }

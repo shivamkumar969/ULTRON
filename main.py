@@ -534,13 +534,23 @@ class UltronLive:
         print("[ULTRON] 🎤 Mic started")
         loop = asyncio.get_event_loop()
 
+        def _safe_put(item):
+            try:
+                self.out_queue.put_nowait(item)
+            except asyncio.QueueFull:
+                try:
+                    self.out_queue.get_nowait()
+                    self.out_queue.put_nowait(item)
+                except Exception:
+                    pass
+
         def callback(indata, frames, time_info, status):
             with self._speaking_lock:
                 ultron_speaking = self._is_speaking
             if not ultron_speaking and not self.ui.muted and not self._phone_active:
                 data = indata.tobytes()
                 loop.call_soon_threadsafe(
-                    self.out_queue.put_nowait,
+                    _safe_put,
                     {"data": data, "mime_type": "audio/pcm;rate=16000"}
                 )
 
@@ -573,8 +583,6 @@ class UltronLive:
                         if self._interrupted:
                             pass  # discard: interrupted
                         else:
-                            if self._turn_done_event and self._turn_done_event.is_set():
-                                self._turn_done_event.clear()
                             # Split into ~50 ms chunks so interrupt() stops audio within 50 ms
                             # (24000 Hz × 2 bytes/sample × 0.05 s = 2400 bytes per slice)
                             _audio_data = response.data
@@ -589,6 +597,13 @@ class UltronLive:
                             txt = _clean_transcript(sc.output_transcription.text)
                             if txt and txt != (out_buf[-1] if out_buf else ""):
                                 out_buf.append(txt)
+
+                        if sc.model_turn and sc.model_turn.parts:
+                            for p in sc.model_turn.parts:
+                                if getattr(p, "text", None):
+                                    t = _clean_transcript(p.text)
+                                    if t and not t.startswith("**") and t != (out_buf[-1] if out_buf else ""):
+                                        out_buf.append(t)
 
                         if sc.input_transcription and sc.input_transcription.text:
                             txt = _clean_transcript(sc.input_transcription.text)
@@ -688,22 +703,27 @@ class UltronLive:
         stream.start()
 
         try:
+            last_played_time = 0.0
             while True:
                 try:
                     chunk = await asyncio.wait_for(
                         self.audio_in_queue.get(),
-                        timeout=0.02
+                        timeout=0.03
                     )
                 except asyncio.TimeoutError:
-                    if (
-                        self._turn_done_event
-                        and self._turn_done_event.is_set()
-                        and self.audio_in_queue.empty()
-                    ):
-                        self.set_speaking(False)
-                        self._turn_done_event.clear()
+                    now = time.monotonic()
+                    # Auto-reset speaking state if queue has been empty for >180ms or turn_done_event fired
+                    if self.audio_in_queue.empty() and self._is_speaking:
+                        if (
+                            (self._turn_done_event and self._turn_done_event.is_set())
+                            or (last_played_time > 0 and (now - last_played_time) > 0.18)
+                        ):
+                            self.set_speaking(False)
+                            if self._turn_done_event:
+                                self._turn_done_event.clear()
                     continue
                 self.set_speaking(True)
+                last_played_time = time.monotonic()
                 try:
                     await asyncio.to_thread(stream.write, chunk)
                 except (RuntimeError, asyncio.CancelledError):
@@ -748,8 +768,9 @@ class UltronLive:
         lang_clause = f" Respond in {lang}." if lang else ""
         name_clause = f" Address the user as {name}." if name else ""
         p1 = (
-            f"Greet the user, mention it is {time_str}, state that systems and HUD HUNNY are fully operational, "
-            f"and ask how you can assist today. One or two short sentences only. Do not call any tools.{lang_clause}{name_clause}"
+            f"Greet the user in your signature calm, polite J.A.R.V.I.S. voice, mention it is {time_str}, "
+            f"state that all systems and holographic Arc-Reactor diagnostics are fully operational, "
+            f"and ask how you may assist them today, sir. One or two short sentences only. Do not call any tools.{lang_clause}{name_clause}"
         )
 
         # Clear the turn-done event
@@ -768,22 +789,25 @@ class UltronLive:
         """Background task: emergency siren & auto-close background apps monitor."""
         emergency_active = False
         while True:
-            await asyncio.sleep(2.0)
+            await asyncio.sleep(10.0)
+            with self._speaking_lock:
+                speaking = self._is_speaking
+            if speaking:
+                continue
+
             status = await asyncio.to_thread(self._sys_monitor.check_emergency)
             is_90 = status.get("is_emergency_90", False)
-            is_95 = status.get("is_overload_95", False)
-            closed = status.get("closed", [])
             cpu = status.get("cpu", 0)
             ram = status.get("ram", 0)
 
             if is_90 and not emergency_active:
                 emergency_active = True
                 self.ui.set_state("EMERGENCY")
-                self.ui.write_log(f"SYS_ALERT: EMERGENCY SYSTEM OVERLOAD DETECTED (CPU: {cpu}%, RAM: {ram}%)! Red alert active.")
+                self.ui.write_log(f"SYS_ALERT: Sustained Hardware Overload (CPU: {cpu}%, RAM: {ram}%).")
                 if self.session:
                     try:
                         await self.session.send_client_content(
-                            turns={"parts": [{"text": f"[SYSTEM_ALERT] Emergency system overload! CPU/RAM at {max(cpu, ram)}%. State that red alert emergency siren is active."}]},
+                            turns={"parts": [{"text": f"[SYSTEM_ALERT] Sustained system hardware overload detected (CPU: {cpu}%, RAM: {ram}%). Inform the user calmly in one sentence."}]},
                             turn_complete=True,
                         )
                     except Exception:
@@ -792,7 +816,7 @@ class UltronLive:
             elif not is_90 and emergency_active:
                 emergency_active = False
                 self.ui.set_state("LISTENING" if not self.ui.muted else "MUTED")
-                self.ui.write_log("SYS: System usage normalized (<85%). Emergency alert deactivated.")
+                self.ui.write_log("SYS: System usage normalized. Emergency alert deactivated.")
 
             if closed and self.session:
                 app_names = ", ".join(closed).replace(".exe", "")
@@ -971,10 +995,10 @@ class UltronLive:
                     self._vision_busy          = False
                     self._vision_last_time     = 0.0
                     self._interrupted          = False
-
-                    print("[ULTRON] Connected.")
+                    self._conn_backoff         = 3
+                    print(f"[{self._asst_name}] Connected.")
                     self.set_app_state("LISTENING")
-                    self.ui.write_log("SYS: ULTRON online.")
+                    self.ui.write_log(f"SYS: {self._asst_name} online. All systems nominal.")
                     play_sfx("startup")
 
                     if self._dashboard:
@@ -1046,8 +1070,7 @@ class UltronLive:
                     _conn_backoff = min(getattr(self, "_conn_backoff", 3) * 2, 60)
                     self._conn_backoff = _conn_backoff
                     self.ui.write_log(
-                        f"NET: Bağlantı kurulamadı — {_conn_backoff}s sonra tekrar deneniyor. "
-                        "(VPN gerekiyor olabilir)"
+                        f"NET: Connection lost — reconnecting in {_conn_backoff}s..."
                     )
                 else:
                     self._conn_backoff = 3
