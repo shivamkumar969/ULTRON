@@ -950,10 +950,7 @@ class UltronLive:
                     http_options={"api_version": "v1beta"}
                 )
 
-                async with (
-                    client.aio.live.connect(model=LIVE_MODEL, config=config) as session,
-                    asyncio.TaskGroup() as tg,
-                ):
+                async with client.aio.live.connect(model=LIVE_MODEL, config=config) as session:
                     self.session          = session
                     self.audio_in_queue   = asyncio.Queue()
                     self.out_queue        = asyncio.Queue(maxsize=200)
@@ -975,26 +972,36 @@ class UltronLive:
                     if self._dashboard:
                         await self._dashboard.broadcast({"type": "status", "state": "active"})
 
-                    tg.create_task(self._send_realtime())
-                    tg.create_task(self._listen_audio())
-                    tg.create_task(self._receive_audio())
-                    tg.create_task(self._play_audio())
-                    tg.create_task(self._run_system_monitor())
-                    tg.create_task(self._run_proactive_mode())
+                    tasks = [
+                        asyncio.create_task(self._send_realtime()),
+                        asyncio.create_task(self._listen_audio()),
+                        asyncio.create_task(self._receive_audio()),
+                        asyncio.create_task(self._play_audio()),
+                        asyncio.create_task(self._run_system_monitor()),
+                        asyncio.create_task(self._run_proactive_mode()),
+                    ]
                     if self._dashboard:
-                        tg.create_task(self._relay_phone_audio())
+                        tasks.append(asyncio.create_task(self._relay_phone_audio()))
 
                     # Wake Word or Morning briefing — fires once per process launch
                     if not self._briefing_sent:
                         self._briefing_sent = True
                         if "--wake-word" in sys.argv:
                             play_sfx("wake")
-                            tg.create_task(self.session.send_client_content(
+                            tasks.append(asyncio.create_task(self.session.send_client_content(
                                 turns={"parts": [{"text": "wake up ultron"}]},
                                 turn_complete=True
-                            ))
+                            )))
                         elif get_brief_enabled():
-                            tg.create_task(self._send_startup_briefing())
+                            tasks.append(asyncio.create_task(self._send_startup_briefing()))
+
+                    try:
+                        await asyncio.gather(*tasks)
+                    finally:
+                        for t in tasks:
+                            if not t.done():
+                                t.cancel()
+                        await asyncio.gather(*tasks, return_exceptions=True)
 
             except KeyboardInterrupt:
                 raise

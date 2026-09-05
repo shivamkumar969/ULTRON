@@ -8,16 +8,12 @@ echo ==============================================
 
 cd /d "%~dp0"
 
-REM ── Check if setup has been completed ──────────────────────────────
-if not exist ".ultron_setup_complete" (
-    echo First-time launch detected. Running setup first...
-    echo.
-    python ULTRON_SETUP.py
-    if %ERRORLEVEL% NEQ 0 (
-        echo Setup failed. Check the messages above.
-        pause
-        exit /b %ERRORLEVEL%
-    )
+REM -- Check Python is installed --
+where python >nul 2>nul
+if %ERRORLEVEL% NEQ 0 (
+    echo [ERROR] Python was not found in your PATH.
+    pause
+    exit /b 1
 )
 
 echo.

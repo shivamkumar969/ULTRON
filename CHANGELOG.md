@@ -43,6 +43,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `from __future__ import annotations` to 14 files ensuring complete PEP 604 type annotation backward compatibility for Python 3.9 environments.
 - Added safe fallback imports for `playwright` in `actions/browser_control.py` to prevent missing C++ compiler build crashes.
 - Added dynamic OneDrive Desktop path resolution in `actions/goal_agent.py`.
+- Replaced `asyncio.TaskGroup` in `main.py` with `asyncio.gather` and clean cancellation handling for full Python 3.9+ compatibility.
+- Fixed missing `import os` in `actions/system_monitor.py` that occurred during high-memory emergency process termination.
+- Fixed `.bat` launchers (`START_ULTRON.bat`, `SETUP.bat`, `Start_ULTRON_Wake_Word.bat`) encoding issues by removing non-ASCII unicode characters and enforcing CRLF formatting.
+- Updated `ULTRON_SETUP.py` to allow Python 3.9 environments and generated `.ultron_setup_complete`.
 - Added safe fallback imports for `sounddevice` and `google.genai` across action modules.
 
 ---

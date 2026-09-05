@@ -9,14 +9,11 @@ echo.
 
 cd /d "%~dp0"
 
-REM ── Check Python is installed ─────────────────────────────────────────
+REM -- Check Python is installed --
 where python >nul 2>nul
 if %ERRORLEVEL% NEQ 0 (
-    echo ERROR: Python was not found on this PC.
-    echo.
-    echo Please install Python 3.10 or newer from https://python.org
-    echo During install, make sure to check "Add python.exe to PATH".
-    echo Then double-click this file again.
+    echo [ERROR] Python was not found on this PC.
+    echo Please install Python and add it to PATH.
     echo.
     pause
     exit /b 1
@@ -28,7 +25,7 @@ python ULTRON_SETUP.py
 
 if %ERRORLEVEL% NEQ 0 (
     echo.
-    echo Setup encountered an error. Check the messages above.
+    echo [ERROR] Setup encountered an error.
     pause
     exit /b %ERRORLEVEL%
 )

@@ -123,8 +123,8 @@ def download_from_github():
 
 def check_python_version():
     print("[INFO] Checking Python version...")
-    if sys.version_info < (3, 10):
-        print(f"[ERROR] Python 3.10 or higher is required. Found Python {sys.version_info.major}.{sys.version_info.minor}")
+    if sys.version_info < (3, 9):
+        print(f"[ERROR] Python 3.9 or higher is required. Found Python {sys.version_info.major}.{sys.version_info.minor}")
         sys.exit(1)
     print(f"[OK] Python {sys.version_info.major}.{sys.version_info.minor} verified.")
 
