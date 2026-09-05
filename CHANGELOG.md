@@ -26,6 +26,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Movie-Grade J.A.R.V.I.S. OS Macros**: Added `clean_desktop`, `system_diagnostics`, `focus_mode`, and `stealth_mode` in `actions/computer_settings.py` and declared schemas in `core/tool_declarations.py`.
+- **Iron Man Arc-Reactor Acoustic Profiles**: Refined mathematical waveform synthesis in `core/sfx.py` to replicate Iron Man's HUD crystal harmonic chimes, sub-bass capacitor power swells, and Mark VII target confirmation pings.
+- **J.A.R.V.I.S. Bilingual Gentleman Butler Persona**: Overhauled `core/prompt.txt` with Tony Stark's authentic J.A.R.V.I.S. character, natural bilingual fluency (Hindi & English), dry wit, and strict real-world execution rules.
+- **Arc-Reactor Cyan Holographic HUD**: Set default Arc-Reactor Cyan theme (`#00e5ff` / `theme-jarvis`) with interactive 3D WebGL core in `dashboard/static/app.html` and `ui.py`.
+- **Dual Wake Word Support**: Upgraded `wake_service.py` with J.A.R.V.I.S. wake phrase detection ("wake up jarvis", "hey jarvis", "jarvis").
+- **Tactical Batch Launcher**: Re-styled `START_ULTRON.bat` with J.A.R.V.I.S. tactical title and cyan console palette.
 - **Procedural Sci-Fi Audio SFX Engine**: Created `core/sfx.py` synthesizing mathematical cybernetic sound cues (wake pulse, listening blip, thinking resonance, complete chime, error alert, startup power-up) via NumPy and sounddevice.
 - **Autonomous Multi-Step Goal Engine**: Created `actions/goal_agent.py` with an iterative Agentic ReAct loop that deconstructs high-level missions, orchestrates tools, recovers from errors, logs real-time progress to the UI, and saves executive markdown reports to the Desktop.
 - **Multi-Monitor Screen Vision**: Upgraded `actions/screen_processor.py` and `core/tool_declarations.py` to support `monitor` parameter (Display 1, Display 2, or virtual combined display) and added `get_monitors_info()`.

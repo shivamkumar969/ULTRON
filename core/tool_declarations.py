@@ -138,13 +138,17 @@ TOOL_DECLARATIONS = [
         "description": (
             "Controls the computer: volume, brightness, window management, keyboard shortcuts, "
             "typing text on screen, closing apps, fullscreen, dark mode, WiFi, restart, shutdown, "
-            "scrolling, tab management, zoom, screenshots, lock screen, refresh/reload page. "
-            "Use for ANY single computer control command."
+            "scrolling, tab management, zoom, screenshots, lock screen, refresh/reload page, "
+            "clean_desktop (categorizes desktop files into folders), "
+            "system_diagnostics (comprehensive real-time CPU, RAM, and operational health briefing), "
+            "focus_mode (minimizes clutter for focused work), "
+            "stealth_mode (dials down volume and interface footprint). "
+            "Use for ANY computer control or OS macro command."
         ),
         "parameters": {
             "type": "OBJECT",
             "properties": {
-                "action":      {"type": "STRING", "description": "The action to perform"},
+                "action":      {"type": "STRING", "description": "The action to perform: clean_desktop | system_diagnostics | focus_mode | stealth_mode | volume_up | volume_down | mute | volume_set | brightness_up | brightness_down | screenshot | lock_screen | show_desktop"},
                 "description": {"type": "STRING", "description": "Natural language description of what to do"},
                 "value":       {"type": "STRING", "description": "Optional value: volume level, text to type, etc."}
             },

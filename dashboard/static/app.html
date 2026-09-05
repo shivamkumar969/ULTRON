@@ -193,7 +193,7 @@ body.emergency-active .emergency-top-banner {
 @keyframes blipFlash { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.3); } }
 </style>
 </head>
-<body>
+<body class="theme-jarvis">
 <div id="webgl"></div>
 <div class="scan"></div>
 <div class="vig"></div>
@@ -203,14 +203,14 @@ body.emergency-active .emergency-top-banner {
 </div>
 
 <div id="boot">
-  <div class="boot-logo">ULTRON</div>
-  <div id="boot-log">INITIALIZING HOLOGRAPHIC CORE</div>
+  <div class="boot-logo">J.A.R.V.I.S.</div>
+  <div id="boot-log">INITIALIZING ARC-REACTOR CORE MATRIX</div>
   <div class="track"><i id="boot-fill"></i></div>
 </div>
 
 <main id="app">
   <header class="top">
-    <div class="brand">ULTRON <span id="sys-status-badge">CORE ONLINE</span></div>
+    <div class="brand">J.A.R.V.I.S. <span id="sys-status-badge">SYSTEMS NOMINAL</span></div>
     <div class="tele">
       <span>UPLINK <strong id="net-status">STABLE</strong></span>
       <span id="clock-time"></span>
@@ -218,8 +218,8 @@ body.emergency-active .emergency-top-banner {
     </div>
     <div class="buttons">
       <select id="theme-select-box" class="btn keep" onchange="setUltronTheme(this.value)" style="padding:6px 8px">
+        <option value="jarvis" selected>🩵 J.A.R.V.I.S Cyan</option>
         <option value="ultron">🔴 Crimson Ultron</option>
-        <option value="jarvis">🩵 J.A.R.V.I.S Cyan</option>
         <option value="violet">💜 Cyber Violet</option>
         <option value="emerald">🟢 Matrix Emerald</option>
         <option value="gold">💛 Arc Gold</option>
@@ -928,10 +928,21 @@ document.addEventListener('keydown', e => {
 clock();
 setInterval(clock, 1000);
 
+window.setUltronTheme = function(theme) {
+  document.body.classList.remove('theme-ultron', 'theme-jarvis', 'theme-violet', 'theme-emerald', 'theme-gold');
+  if (theme && theme !== 'ultron') {
+    document.body.classList.add(`theme-${theme}`);
+  }
+  localStorage.setItem('ultron_theme', theme);
+  const selectBox = $('theme-select-box');
+  if (selectBox && selectBox.value !== theme) selectBox.value = theme;
+  window.dispatchEvent(new CustomEvent('ultron-theme-change', { detail: { theme } }));
+};
+
 loadReminders();
 renderReminders();
-const savedTheme = localStorage.getItem('ultron_theme');
-if (savedTheme) setUltronTheme(savedTheme);
+const savedTheme = localStorage.getItem('ultron_theme') || 'jarvis';
+setUltronTheme(savedTheme);
 
 updateAIState('LISTENING');
 connect();
@@ -974,8 +985,8 @@ let n = 0, tid = setInterval(() => {
     const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 1.7, .68, .08);
     composer.addPass(bloom);
 
-    let mainColorHex = 0xff1b2d;
-    const hot = 0xff9ba3;
+    let mainColorHex = 0x00e5ff;
+    const hot = 0x5ceaff;
     const additive = (color, opacity) => new THREE.MeshBasicMaterial({ color, transparent:true, opacity, blending:THREE.AdditiveBlending, depthWrite:false, side:THREE.DoubleSide });
     const reactor = new THREE.Group();
     reactor.position.y = .12;
@@ -1010,7 +1021,7 @@ let n = 0, tid = setInterval(() => {
 
     const overlay = document.createElement('div');
     overlay.className = 'reactor-readout';
-    overlay.innerHTML = '<div class="holo-card left"><strong>ARC REACTOR</strong>ENERGY CELL: STABLE<br>MAGNETIC SEAL: 100%<br>PHASE ARRAY: LOCKED</div><div class="holo-card right"><strong>ULTRON NEURAL LINK</strong>VOICE RESONANCE: LIVE<br>COGNITIVE LATTICE: SYNCED<br>THREAT VECTOR: NULL</div><div class="breath-meter">' + '<i></i>'.repeat(19) + '</div>';
+    overlay.innerHTML = '<div class="holo-card left"><strong>ARC REACTOR</strong>ENERGY CELL: 100%<br>CONTAINMENT: STABLE<br>PHASE ARRAY: LOCKED</div><div class="holo-card right"><strong>J.A.R.V.I.S. MATRIX</strong>VOICE LINK: ACTIVE<br>NEURAL GRID: NOMINAL<br>THREAT VECTOR: NULL</div><div class="breath-meter">' + '<i></i>'.repeat(19) + '</div>';
     document.querySelector('.core').append(overlay);
 
     let target = .38, energy = .38, alert = false, pointerX = 0, pointerY = 0;

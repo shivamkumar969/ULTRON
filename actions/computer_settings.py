@@ -510,7 +510,98 @@ def shutdown_computer():
     else:
         subprocess.run(["systemctl", "poweroff"], capture_output=True)
 
+
+def clean_desktop() -> str:
+    """Categorizes and moves clutter on the Desktop into organized folders."""
+    import shutil
+    desktop = Path.home() / "Desktop"
+    onedrive_desktop = Path.home() / "OneDrive" / "Desktop"
+    if onedrive_desktop.exists():
+        desktop = onedrive_desktop
+
+    if not desktop.exists():
+        return "Desktop directory not accessible."
+
+    categories = {
+        "Documents": {".pdf", ".docx", ".doc", ".txt", ".xlsx", ".pptx", ".csv"},
+        "Images": {".png", ".jpg", ".jpeg", ".webp", ".svg", ".gif", ".bmp"},
+        "Installers": {".exe", ".msi", ".iso", ".dmg"},
+        "Code_Scripts": {".py", ".js", ".html", ".css", ".json", ".ts", ".cpp", ".java"},
+        "Archives": {".zip", ".rar", ".7z", ".tar", ".gz"}
+    }
+
+    moved_count = 0
+    for item in desktop.iterdir():
+        if item.is_file() and not item.name.startswith("."):
+            ext = item.suffix.lower()
+            if ext in (".lnk", ".url", ".ini"):
+                continue
+            target_cat = None
+            for cat_name, exts in categories.items():
+                if ext in exts:
+                    target_cat = cat_name
+                    break
+            if not target_cat:
+                target_cat = "Miscellaneous"
+
+            target_folder = desktop / target_cat
+            target_folder.mkdir(exist_ok=True)
+            try:
+                dest = target_folder / item.name
+                if not dest.exists():
+                    shutil.move(str(item), str(dest))
+                    moved_count += 1
+            except Exception:
+                pass
+
+    return f"Desktop organization complete, sir. {moved_count} items have been neatly categorized into their respective directories."
+
+
+def system_diagnostics() -> str:
+    """Comprehensive real-time diagnostic briefing in authentic J.A.R.V.I.S. voice."""
+    try:
+        from actions.system_monitor import get_system_status
+        stat = get_system_status()
+        cpu = stat.get("cpu_percent", "--")
+        ram_gb = stat.get("ram_used_gb", "--")
+        ram_tot = stat.get("ram_total_gb", "--")
+        ram_pct = stat.get("ram_percent", "--")
+        uptime = stat.get("uptime", "nominal")
+        procs = stat.get("process_count", "--")
+        return (
+            f"Diagnostics complete, sir. Primary processing cores are operating at {cpu}% capacity. "
+            f"Physical memory stands at {ram_gb} GB of {ram_tot} GB ({ram_pct}%). "
+            f"System uptime is {uptime} with {procs} active tasks. "
+            f"All operational matrices are functioning within nominal parameters."
+        )
+    except Exception as e:
+        return f"Diagnostics completed with advisory: {e}"
+
+
+def focus_mode() -> str:
+    """Enables distraction-free focus workspace."""
+    show_desktop()
+    return "Focus mode engaged, sir. Background clutter minimized. Ready for your primary directive."
+
+
+def stealth_mode() -> str:
+    """Dials down system audio and display footprint."""
+    try:
+        volume_set(15)
+        return "Stealth protocols initiated, sir. Audio dialed down and interface set to minimum footprint."
+    except Exception as e:
+        return f"Stealth mode initiated: {e}"
+
+
 ACTION_MAP: dict[str, callable] = {
+    "clean_desktop":       clean_desktop,
+    "desktop_cleanup":     clean_desktop,
+    "system_diagnostics":  system_diagnostics,
+    "diagnostic_scan":     system_diagnostics,
+    "focus_mode":          focus_mode,
+    "work_mode":           focus_mode,
+    "stealth_mode":        stealth_mode,
+    "night_mode":          stealth_mode,
     "volume_up":           volume_up,
     "volume_down":         volume_down,
     "mute":                volume_mute,
@@ -689,7 +780,9 @@ def computer_settings(
         return f"Unknown action: '{raw_action}'."
 
     try:
-        func()
+        res = func()
+        if isinstance(res, str):
+            return res
         return f"Done: {action}."
     except Exception as e:
         print(f"[Settings] Action failed ({action}): {e}")

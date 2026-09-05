@@ -249,7 +249,7 @@ class UltronWebWindow(QMainWindow):
 
     def __init__(self, face_path: str = "face.png"):
         super().__init__()
-        self.setWindowTitle("ULTRON OS — Next-Gen AI Operating System")
+        self.setWindowTitle("J.A.R.V.I.S. OS — Tactical Holographic Interface")
         self.resize(1280, 800)
         self.setMinimumSize(900, 600)
 
@@ -260,7 +260,7 @@ class UltronWebWindow(QMainWindow):
 
         self._muted = False
         self._ready = True
-        self._assistant_name = _read_full_config().get("assistant_name", "ULTRON") or "ULTRON"
+        self._assistant_name = _read_full_config().get("assistant_name", "J.A.R.V.I.S.") or "J.A.R.V.I.S."
         self.on_text_command = None
         self.on_remote_clicked = None
         self.on_interrupt = None

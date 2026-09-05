@@ -1,9 +1,9 @@
 @echo off
-title ULTRON -- AI Desktop Assistant
-color 0A
+title J.A.R.V.I.S. -- Tactical AI Operating System
+color 0B
 
 echo ===================================================
-echo    ULTRON AI Engine -- Launcher
+echo    J.A.R.V.I.S. Tactical AI Operating System
 echo ===================================================
 echo.
 
@@ -32,8 +32,8 @@ if not exist ".ultron_setup_complete" (
     )
 )
 
-REM -- Launch ULTRON Main Orchestrator --
-echo Starting ULTRON Assistant...
+REM -- Launch J.A.R.V.I.S. Main Orchestrator --
+echo Starting J.A.R.V.I.S. Tactical Assistant...
 echo.
 python main.py
 

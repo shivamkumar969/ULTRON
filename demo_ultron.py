@@ -1,9 +1,9 @@
 """
-demo_ultron.py — ULTRON Autonomous Capability & Feature Live Demonstration
+demo_ultron.py — J.A.R.V.I.S. Autonomous Capability & Tactical Engine Verification
 
 Runs a full capability verification showing:
-1. Procedural Sci-Fi Audio SFX
-2. Real-time System Telemetry & Performance
+1. Iron Man Arc Reactor Audio SFX (Power-up, wake, and confirmation chime)
+2. J.A.R.V.I.S. System Diagnostics Macro
 3. Multi-Monitor Display Detection
 4. Autonomous Multi-Step Goal Engine (Creates Desktop report)
 5. Ecosystem Verification (Smart Home & Email/Calendar)
@@ -16,18 +16,18 @@ import sys
 from pathlib import Path
 
 print("=" * 65)
-print("   🤖 ULTRON AI ASSISTANT — AUTONOMOUS CAPABILITY DEMONSTRATION")
+print("   🤖 J.A.R.V.I.S. TACTICAL AI SYSTEM — VERIFICATION & DIAGNOSTIC")
 print("=" * 65)
 print()
 
-# 1. Procedural Sci-Fi Audio SFX Test
-print("[1/5] 🔊 Testing Sci-Fi Audio SFX Engine...")
+# 1. Iron Man Procedural Arc Reactor SFX Test
+print("[1/5] 🔊 Testing Iron Man Arc Reactor SFX Engine...")
 try:
     from core.sfx import play_sfx
-    print("      Playing power-up startup audio pulse...")
+    print("      Playing Arc-Reactor power-up sound...")
     play_sfx("startup", blocking=True)
-    time.sleep(0.3)
-    print("      Playing holographic confirmation chime...")
+    time.sleep(0.2)
+    print("      Playing Mark VII target lock / confirmation chime...")
     play_sfx("complete", blocking=True)
     print("      ✅ Audio SFX Engine: Operational")
 except Exception as e:
@@ -35,18 +35,15 @@ except Exception as e:
 
 print()
 
-# 2. Real-Time Hardware Telemetry
-print("[2/5] ⚡ Checking Live System Telemetry...")
+# 2. J.A.R.V.I.S. Diagnostic Macro
+print("[2/5] ⚡ Running J.A.R.V.I.S. System Diagnostics Macro...")
 try:
-    from actions.system_monitor import get_system_status
-    status = get_system_status()
-    print(f"      • CPU Utilization : {status.get('cpu_percent')}%")
-    print(f"      • Memory Usage    : {status.get('ram_used_gb')} GB / {status.get('ram_total_gb')} GB ({status.get('ram_percent')}%)")
-    print(f"      • System Uptime   : {status.get('uptime')}")
-    print(f"      • Active Processes: {status.get('process_count')}")
-    print("      ✅ Hardware Telemetry: Operational")
+    from actions.computer_settings import computer_settings
+    briefing = computer_settings({"action": "system_diagnostics"})
+    print(f"      J.A.R.V.I.S.: \"{briefing}\"")
+    print("      ✅ System Diagnostics: Operational")
 except Exception as e:
-    print(f"      ⚠️ System Monitor Note: {e}")
+    print(f"      ⚠️ Diagnostic Note: {e}")
 
 print()
 
@@ -76,7 +73,7 @@ try:
     print(f"      Status: {result}")
     desktop_file = _get_desktop_dir() / "Ultron_Autonomous_Report.md"
     if desktop_file.exists():
-        print(f"      📄 File Created: {desktop_file}")
+        print(f"      📄 File Verified on Desktop: {desktop_file.name}")
     print("      ✅ Autonomous Goal Engine: Operational")
 except Exception as e:
     print(f"      ⚠️ Goal Agent Note: {e}")
@@ -99,5 +96,5 @@ except Exception as e:
 
 print()
 print("=" * 65)
-print("   🎉 ALL ULTRON ENGINES VERIFIED & READY FOR REAL-TIME INTERACTION!")
+print("   🎉 J.A.R.V.I.S. OPERATIONAL — READY FOR VOICE INTERACTION, SIR!")
 print("=" * 65)

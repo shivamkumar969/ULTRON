@@ -23,14 +23,18 @@ import psutil
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 WAKE_PHRASES = [
+    "wake up jarvis",
+    "jarvis wake up",
+    "hey jarvis",
+    "jarvis",
     "wake up ultron",
     "ultron wake up",
     "hey ultron",
     "ultron",
     "wake up",
     "wakey wakey",
+    "weak up jarvis",
     "weak up ultron",
-    "weak up",
 ]
 
 # How many seconds of audio to capture per recognition attempt

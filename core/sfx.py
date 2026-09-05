@@ -24,75 +24,87 @@ SFX_TYPE = Literal["wake", "listening", "thinking", "complete", "error", "startu
 
 
 def _synthesize_waveform(sfx_type: SFX_TYPE) -> np.ndarray:
-    """Generate normalized float32 mono waveform for the requested sound effect."""
+    """Generate normalized float32 mono waveform for authentic Iron Man J.A.R.V.I.S. HUD audio."""
     sr = SAMPLE_RATE
 
     if sfx_type == "wake":
-        # Cinematic rising dual-harmonic sweep (150Hz -> 650Hz + harmonic overtone)
-        duration = 0.45
-        t = np.linspace(0, duration, int(sr * duration), endpoint=False, dtype=np.float32)
-        freq_main = np.geomspace(160, 720, len(t))
-        freq_harm = freq_main * 1.5
-        env = np.sin(np.pi * (t / duration) ** 0.6)  # smooth swell
-        wave = 0.6 * np.sin(2 * np.pi * freq_main * t) + 0.3 * np.sin(2 * np.pi * freq_harm * t)
-        return (wave * env * 0.4).astype(np.float32)
-
-    elif sfx_type == "listening":
-        # Short, crisp holographic high-tech ping (880Hz -> 1320Hz)
-        duration = 0.12
-        t = np.linspace(0, duration, int(sr * duration), endpoint=False, dtype=np.float32)
-        env = np.exp(-t * 35)  # rapid decay
-        wave = 0.7 * np.sin(2 * np.pi * 950 * t) + 0.3 * np.sin(2 * np.pi * 1425 * t)
+        # Iron Man HUD wake: instant crisp glass-harmonic ping + warm arc-reactor spool
+        dur_ping = 0.28
+        t = np.linspace(0, dur_ping, int(sr * dur_ping), endpoint=False, dtype=np.float32)
+        env = np.exp(-t * 16)
+        # Frequencies tuned to musical D6 / A5 holographic interval
+        wave = (
+            0.55 * np.sin(2 * np.pi * 1174.66 * t)
+            + 0.30 * np.sin(2 * np.pi * 1760.0 * t)
+            + 0.15 * np.sin(2 * np.pi * 587.33 * t)
+        )
         return (wave * env * 0.35).astype(np.float32)
 
-    elif sfx_type == "thinking":
-        # Subdued cybernetic resonance pulse (440Hz modulated by 12Hz)
-        duration = 0.3
+    elif sfx_type == "listening":
+        # Crisp holographic HUD micro-blip (Iron Man helmet interface click)
+        duration = 0.08
         t = np.linspace(0, duration, int(sr * duration), endpoint=False, dtype=np.float32)
-        lfo = 0.5 * (1 + np.sin(2 * np.pi * 14 * t))
+        env = np.exp(-t * 45)
+        wave = 0.7 * np.sin(2 * np.pi * 1318.51 * t) + 0.3 * np.sin(2 * np.pi * 2637.0 * t)
+        return (wave * env * 0.28).astype(np.float32)
+
+    elif sfx_type == "thinking":
+        # Subdued cybernetic resonance pulse (subtle arc hum)
+        duration = 0.25
+        t = np.linspace(0, duration, int(sr * duration), endpoint=False, dtype=np.float32)
+        lfo = 0.5 * (1.0 + np.sin(2 * np.pi * 8.0 * t))
         env = np.sin(np.pi * (t / duration))
-        wave = np.sin(2 * np.pi * 520 * t) * lfo
-        return (wave * env * 0.25).astype(np.float32)
+        wave = (0.7 * np.sin(2 * np.pi * 440.0 * t) + 0.3 * np.sin(2 * np.pi * 880.0 * t)) * lfo
+        return (wave * env * 0.20).astype(np.float32)
 
     elif sfx_type == "complete":
-        # Ascending 3-tone holographic confirmation chime (600Hz -> 900Hz -> 1200Hz)
-        tone_dur = 0.07
+        # Iconic Mark VII 3-tone ascending triad chime (D5 -> A5 -> D6)
+        tone_dur = 0.075
         chunks = []
-        for f in (640, 960, 1280):
+        for f in (587.33, 880.0, 1174.66):
             t = np.linspace(0, tone_dur, int(sr * tone_dur), endpoint=False, dtype=np.float32)
-            env = np.exp(-t * 20)
-            tone = 0.7 * np.sin(2 * np.pi * f * t) + 0.3 * np.sin(2 * np.pi * (f * 1.5) * t)
+            env = np.exp(-t * 18)
+            tone = 0.65 * np.sin(2 * np.pi * f * t) + 0.35 * np.sin(2 * np.pi * (f * 2) * t)
+            chunks.append(tone * env)
+        wave = np.concatenate(chunks)
+        return (wave * 0.32).astype(np.float32)
+
+    elif sfx_type == "error":
+        # Tactical warning blip (descending minor third)
+        tone_dur = 0.10
+        chunks = []
+        for f in (620.0, 440.0):
+            t = np.linspace(0, tone_dur, int(sr * tone_dur), endpoint=False, dtype=np.float32)
+            env = np.exp(-t * 22)
+            tone = 0.75 * np.sin(2 * np.pi * f * t) + 0.25 * np.sin(2 * np.pi * (f * 1.5) * t)
             chunks.append(tone * env)
         wave = np.concatenate(chunks)
         return (wave * 0.35).astype(np.float32)
 
-    elif sfx_type == "error":
-        # Descending dual-tone metallic alert (480Hz -> 240Hz)
-        tone_dur = 0.12
-        chunks = []
-        for f in (480, 310):
-            t = np.linspace(0, tone_dur, int(sr * tone_dur), endpoint=False, dtype=np.float32)
-            env = np.exp(-t * 18)
-            tone = 0.7 * np.sin(2 * np.pi * f * t) + 0.3 * np.sin(2 * np.pi * (f * 1.25) * t)
-            chunks.append(tone * env)
-        wave = np.concatenate(chunks)
-        return (wave * 0.4).astype(np.float32)
-
     elif sfx_type == "startup":
-        # Power-up pulse: deep bass drop followed by crisp metallic sweep
-        duration = 0.6
-        t = np.linspace(0, duration, int(sr * duration), endpoint=False, dtype=np.float32)
-        freq = np.geomspace(90, 880, len(t))
-        env = np.sin(np.pi * (t / duration) ** 0.5)
-        wave = 0.7 * np.sin(2 * np.pi * freq * t) + 0.3 * np.sin(2 * np.pi * (freq * 2) * t)
-        return (wave * env * 0.45).astype(np.float32)
+        # Cinematic Arc Reactor Power-Up:
+        # Stage 1: Deep electromagnetic sub-bass swell (60Hz -> 240Hz)
+        # Stage 2: Brilliant crystal harmonic chime
+        dur1 = 0.45
+        t1 = np.linspace(0, dur1, int(sr * dur1), endpoint=False, dtype=np.float32)
+        freq_sweep = np.geomspace(65, 320, len(t1))
+        env1 = np.sin(np.pi * (t1 / dur1) ** 0.7)
+        stage1 = (0.75 * np.sin(2 * np.pi * freq_sweep * t1) + 0.25 * np.sin(2 * np.pi * freq_sweep * 2 * t1)) * env1
+
+        dur2 = 0.25
+        t2 = np.linspace(0, dur2, int(sr * dur2), endpoint=False, dtype=np.float32)
+        env2 = np.exp(-t2 * 12)
+        stage2 = (0.6 * np.sin(2 * np.pi * 1174.66 * t2) + 0.4 * np.sin(2 * np.pi * 1760.0 * t2)) * env2
+
+        wave = np.concatenate([stage1 * 0.4, stage2 * 0.35])
+        return wave.astype(np.float32)
 
     else:  # toggle
-        duration = 0.08
+        duration = 0.06
         t = np.linspace(0, duration, int(sr * duration), endpoint=False, dtype=np.float32)
-        env = np.exp(-t * 40)
-        wave = np.sin(2 * np.pi * 750 * t)
-        return (wave * env * 0.3).astype(np.float32)
+        env = np.exp(-t * 50)
+        wave = np.sin(2 * np.pi * 880.0 * t)
+        return (wave * env * 0.25).astype(np.float32)
 
 
 # Pre-synthesized waveform cache
